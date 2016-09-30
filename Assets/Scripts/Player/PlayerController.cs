@@ -23,6 +23,10 @@ namespace Player
 				Debug.Break();
 				Debug.LogError("Unassigned variable(s)");
 			}
+			else
+			{
+
+			}
 		}
 
 		private void Update ()
@@ -36,10 +40,48 @@ namespace Player
 			{
 				PlayerInput.Input input = PlayerInput.GetInput();
 
-				movement.UpdateMovementState(state, input);
-				weapons.UpdateWeaponState(input);
-				animations.UpdateAnimationState();
+				if (state.InVehicle)
+				{
+					vehicleController.UpdateVehicleState(input);
+				}
+				else if (!state.InVehicle)
+				{
+					weapons.UpdateWeaponState(input);
+				}
 			}
+			else
+			{
+				// Control death camera??
+
+			}
+		}
+
+		public void OnWeaponFired (Weapon weapon)
+		{
+			animations.OnWeaponFired(weapon);
+			state.CurrentBattleStatus = PlayerState.BattleStatus.Firing;
+
+			// HUD . Reflect
+		}
+
+		public void OnWeaponAimed (Weapon weapon)
+		{
+			// Change sensitivity 
+			// HUD . Reflect
+		}
+
+		public void OnWaponReloaded (Weapon weapon)
+		{
+			animations.OnWeaponReloaded(weapon);
+
+			// HUD . Reflect
+		}
+
+		public void OnWeaponChanged (Weapon weapon)
+		{
+			animations.OnWeaponChanged(weapon);
+
+			//HUD . Reflect
 		}
 	}
 }

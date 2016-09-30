@@ -1,10 +1,42 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PlayerAnimations : MonoBehaviour 
+//<summary> 
+// 
+//</summary> 
+
+namespace Player 
 {
-	public void UpdateAnimationState ()
+	public class PlayerAnimations : MonoBehaviour 
 	{
-		
+		PlayerController controller;
+
+		public void Initialize (PlayerController pController)
+		{
+			controller = pController;
+		}
+
+		public void OnWeaponFired (Weapon weapon)
+		{
+			// Player weapon animations
+			// Player player animations
+		}
+
+		public void OnWeaponReloaded (Weapon weapon)
+		{
+			// Player weapon animations
+			// Player player animations
+		}
+
+		public void OnWeaponChanged (Weapon weapon)
+		{
+			// Player weapon animations
+			// Player player animations
+		}
+
+		public void UpdateAnimationState ()
+		{
+			
+		}
 	}
 }

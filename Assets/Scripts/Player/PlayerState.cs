@@ -8,6 +8,9 @@ namespace Player
 		public enum State {Normal, InAir, InVehicle, IsCrouched, IsDead}
 		public State CurrentState;
 
+		public enum BattleStatus {Normal, Firing, UnderAttack, Recharging}
+		public BattleStatus CurrentBattleStatus;
+
 		public string Name
 		{
 			get { return gameObject.name; }
@@ -44,7 +47,24 @@ namespace Player
 			set { CurrentState = State.InVehicle; }
 		}
 
+		public BattleStatus Status
+		{
+			get { return CurrentBattleStatus; }
+			set { CurrentBattleStatus = value; }
+		}
 
+		public bool IsMine 
+		{
+			get 
+			{
+				/*if (NetworkingWhatever.IsConnected)
+					return networkviewWhatever.IsMine;
+				else
+					return NetworkWhater.IsSinglePlayer;*/
+
+				return true;
+			}
+		}
 	}
 }
 

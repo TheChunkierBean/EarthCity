@@ -19,6 +19,13 @@ public class Weapon : MonoBehaviour
 
     public animManager amM;
 
+    Player.PlayerController controller;
+    
+    public void Initialize (Player.PlayerController pController)
+    {
+        controller = pController;
+    }
+
 
     void Awake()
     {
@@ -37,6 +44,17 @@ public class Weapon : MonoBehaviour
             reload();
         }
     }
+
+    public void Shoot ()
+    {
+        controller.OnWeaponFired(this);
+    }
+
+    public void Aim ()
+    {
+        controller.OnWeaponAimed(this);
+    }
+
 
     public void fireShot()
     {

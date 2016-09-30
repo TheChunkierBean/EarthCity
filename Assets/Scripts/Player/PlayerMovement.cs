@@ -9,6 +9,13 @@ namespace Player
 {
 	public class PlayerMovement : MonoBehaviour 
 	{
+		PlayerController controller;
+
+		public void Initialize (PlayerController pController)
+		{
+			controller = pController;
+		}
+		
 		public void UpdateMovementState (PlayerState state, PlayerInput.Input input)
 		{
 			if (input.Vertical > 0)
