@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 //<summary> 
 // 
@@ -9,26 +9,48 @@ namespace Player
 {
 	public class PlayerWeapons : MonoBehaviour 
 	{
-		PlayerController controller;
-		public Weapon DEBUGWeapon;
+		public List<Weapon> weapons = new List<Weapon>();
 
-		public void Initialize (PlayerController pController)
+		private int _primary;
+		private int _secondary;
+
+		public Weapon Primary
 		{
-			controller = pController;
-			DEBUGWeapon.Initialize(pController);
-		}
+			get { return weapons[_primary]; }
+			set { _primary = weapons.IndexOf(value); }
+		} 
+
+		public Weapon Secondary
+		{
+			get { return weapons[_secondary]; }
+			set { _secondary = weapons.IndexOf(value); }
+		} 
+
+		#region Events
+
+			public delegate void PlayerWeaponsEvent ();
+	    	public PlayerWeaponsEvent OnWeaponChangedEvent;
+	    	public PlayerWeaponsEvent OnAmmoEquippedEvent;
+
+    	#endregion Events
 
 		public void UpdateWeaponState (PlayerInput.Input input)
 		{
 			if (input.Shoot)
 			{
-				DEBUGWeapon.Shoot();
-				//Current weapon . shoot
+				Primary.Fire();
 			}
 			else if (input.Aim)
 			{
-				DEBUGWeapon.Aim();
-				//Current weapon . aim
+				Primary.Aim();
+			}
+			else if (input.Reload)
+			{
+				Primary.Reload();
+			}
+			else if (input.Melee)
+			{
+				Melee();
 			}
 			else if (input.Shift)
 			{
@@ -38,7 +60,17 @@ namespace Player
 
 		private void ChangeWeapons ()
 		{
-			controller.OnWeaponChanged(DEBUGWeapon);
+			OnWeaponChangedEvent();
+		}
+
+		private void Melee ()
+		{
+			
+		}
+
+		private void EquipAmmo ()
+		{
+			OnAmmoEquippedEvent();
 		}
 	}
 }

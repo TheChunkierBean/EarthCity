@@ -9,13 +9,6 @@ namespace Player
 {
 	public class PlayerAnimations : MonoBehaviour 
 	{
-		PlayerController controller;
-
-		public void Initialize (PlayerController pController)
-		{
-			controller = pController;
-		}
-
 		public void OnWeaponFired (Weapon weapon)
 		{
 			// Player weapon animations

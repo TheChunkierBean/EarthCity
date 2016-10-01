@@ -3,8 +3,6 @@ using System.Collections;
 
 public class Weapon : MonoBehaviour
 {
-
-
     public Camera fpsCam;
     public GameObject hitPar;
     public int damage = 30;
@@ -19,40 +17,78 @@ public class Weapon : MonoBehaviour
 
     public animManager amM;
 
-    Player.PlayerController controller;
-    
-    public void Initialize (Player.PlayerController pController)
+    #region Events
+
+        public delegate void WeaponEvent ();
+        public WeaponEvent OnWeaponFiredEvent;
+        public WeaponEvent OnWeaponAimedEvent;
+        public WeaponEvent OnWeaponReloadedEvent;
+
+    #endregion Events
+
+
+    float fireTimeStamp = -10.0F;
+    float fireRate = 0.1F;
+
+    public bool CanShoot
     {
-        controller = pController;
+        get { return Time.time >= fireTimeStamp + fireRate; }
+    }
+
+    // Is the weapon ready to shoot?
+    public void TryFireWeapon ()
+    {
+        
+    }
+
+    protected void FireWeapon ()
+    {
+        OnWeaponFiredEvent();
+
+        fireTimeStamp = Time.time;
+        ammo--;
     }
 
 
-    void Awake()
+    protected virtual string ParseAmmo ()
     {
-
+        return ammo.ToString();
     }
 
-    void Update()
+
+
+
+
+
+
+
+
+
+
+
+    public void Fire ()
     {
-        if (Input.GetMouseButton(0))
+        if (CanShoot)
         {
-            fireShot();
+
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            reload();
-        }
-    }
-
-    public void Shoot ()
-    {
-        controller.OnWeaponFired(this);
+        // Firing code
     }
 
     public void Aim ()
     {
-        controller.OnWeaponAimed(this);
+        Debug.Log("Weapon is aiming");
+        OnWeaponAimedEvent();
+
+        // Aiming code
+    }
+
+    public void Reload ()
+    {
+        Debug.Log("Weapon is reloading");
+        OnWeaponReloadedEvent();
+        // Reloading code
     }
 
 

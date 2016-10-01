@@ -2,22 +2,25 @@
 using System.Collections;
 
 //<summary> 
-// 
+// A collection and centralized controller of all the components of a player.
+// Only basic logic and redistribution of inputs and references to other components.
 //</summary> 
 
 namespace Player
 {
 	public class PlayerController : MonoBehaviour 
 	{
-		public PlayerMovement movement;
-		public PlayerWeapons weapons;
-		public PlayerDamageController damageController;
-		public PlayerAnimations animations;
-		public PlayerVehicleController vehicleController;
-		public PlayerState state;
+		private PlayerMovement movement;
+		private PlayerWeapons weapons;
+		private PlayerDamageController damageController;
+		private PlayerAnimations animations;
+		private PlayerVehicleController vehicleController;
+		private PlayerState state;
 
 		private void Awake ()
 		{
+			GetReference();
+
 			if (movement == null || weapons == null || damageController == null || animations == null || vehicleController == null)
 			{
 				Debug.Break();
@@ -25,7 +28,7 @@ namespace Player
 			}
 			else
 			{
-
+				Subscribe();
 			}
 		}
 
@@ -34,6 +37,8 @@ namespace Player
 			UpdateState();
 		}
 
+
+		// 
 		private void UpdateState ()
 		{
 			if (state.IsAlive)
@@ -52,36 +57,72 @@ namespace Player
 			else
 			{
 				// Control death camera??
-
 			}
 		}
 
-		public void OnWeaponFired (Weapon weapon)
+		// The weapon was fired by the player
+		public void OnWeaponFired ()
 		{
-			animations.OnWeaponFired(weapon);
-			state.CurrentBattleStatus = PlayerState.BattleStatus.Firing;
+			Debug.Log("OnWeaponFired");
+
+			animations.OnWeaponFired(weapons.Primary);
+			//state.CurrentBattleStatus = PlayerState.BattleStatus.Firing;
+			// Recoil System 
 
 			// HUD . Reflect
 		}
 
-		public void OnWeaponAimed (Weapon weapon)
+		// The weapon was aimed by the player
+		public void OnWeaponAimed ()
 		{
+			Debug.Log("OnWeaponAimed");
+
 			// Change sensitivity 
 			// HUD . Reflect
 		}
 
-		public void OnWaponReloaded (Weapon weapon)
+		// The weapon was reloaded by the player
+		public void OnWeaponReloaded ()
 		{
-			animations.OnWeaponReloaded(weapon);
+			Debug.Log("OnWeaponReloaded");
+	
+			animations.OnWeaponReloaded(weapons.Primary);
 
 			// HUD . Reflect
 		}
 
-		public void OnWeaponChanged (Weapon weapon)
+		// The weapon was changed by the player
+		public void OnWeaponChanged ()
 		{
-			animations.OnWeaponChanged(weapon);
+			Debug.Log("OnWeaponChanged");
+
+			animations.OnWeaponChanged(weapons.Primary);
 
 			//HUD . Reflect
+		}
+
+		// Acquires a reference to all components of the player
+		private void GetReference ()
+		{
+			movement = GetComponent<PlayerMovement>();
+			weapons = GetComponent<PlayerWeapons>();
+			damageController = GetComponent<PlayerDamageController>();
+			animations = GetComponent<PlayerAnimations>();
+			vehicleController = GetComponent<PlayerVehicleController>();
+			state = GetComponent<PlayerState>();		
+		}
+
+		// Subscribes to all events raised by the player
+		private void Subscribe ()
+		{
+			foreach (Weapon w in weapons.weapons)
+			{
+		        w.OnWeaponFiredEvent += OnWeaponFired;
+        		w.OnWeaponAimedEvent += OnWeaponAimed;
+        		w.OnWeaponReloadedEvent += OnWeaponReloaded;
+			}
+
+        	weapons.OnWeaponChangedEvent += OnWeaponChanged;
 		}
 	}
 }

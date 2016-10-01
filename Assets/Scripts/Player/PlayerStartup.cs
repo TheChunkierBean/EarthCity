@@ -6,6 +6,14 @@
 
 namespace Player
 {
+	[RequireComponent(typeof(PlayerAnimations))]
+	[RequireComponent(typeof(PlayerDamageController))]
+	[RequireComponent(typeof(PlayerMovement))]
+	[RequireComponent(typeof(PlayerVehicleController))]
+	[RequireComponent(typeof(PlayerWeapons))]
+	[RequireComponent(typeof(PlayerController))]
+	[RequireComponent(typeof(PlayerState))]
+
 	public class PlayerStartup : MonoBehaviour 
 	{
 		public PlayerState state;
@@ -28,11 +36,9 @@ namespace Player
 			vehicleController.enabled = isMine;
 			weapons.enabled = isMine;
 
-			animations.Initialize(controller);
 			damageController.Initialize(controller);
 			damageController.Initialize(controller);
 			vehicleController.Initialize(controller);
-			weapons.Initialize(controller);
 		}
 	}
 }
