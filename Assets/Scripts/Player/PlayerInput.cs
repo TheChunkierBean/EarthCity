@@ -13,6 +13,9 @@ namespace Player
 			public float Vertical; // Forward, backward
 			public float Horizontal;	//Left, right
 
+			public float VerticalLook;
+			public float HorizontalLook;
+
 			public bool Jump;
 			public bool Reload;
 			public bool Usage; // Pickup weapon, mount turret, mount warthog, etc.
@@ -33,14 +36,16 @@ namespace Player
 
 			i.Vertical = UnityEngine.Input.GetAxis("Vertical");
 			i.Horizontal = UnityEngine.Input.GetAxis("Horizontal");
-
-			i.Jump = UnityEngine.Input.GetButton("Jump");
-			//i.reload = UnityEngine.Input.Get
+			i.VerticalLook = UnityEngine.Input.GetAxisRaw("Mouse X");
+			i.HorizontalLook = UnityEngine.Input.GetAxisRaw("Mouse Y");
+			
+			i.Jump = UnityEngine.Input.GetButtonDown("Jump");
+			i.Reload = UnityEngine.Input.GetKeyDown(KeyCode.R);
 			//i.usage = UnityEngine.Input.Get
-			i.Shift = UnityEngine.Input.GetKey(KeyCode.Tab);
-			i.Melee = UnityEngine.Input.GetKey(KeyCode.F);
+			i.Shift = UnityEngine.Input.GetKeyDown(KeyCode.Q);
+			i.Melee = UnityEngine.Input.GetKeyDown(KeyCode.F);
 			i.Shoot = UnityEngine.Input.GetButton("Fire1");
-			i.Aim = UnityEngine.Input.GetButton("Fire2");
+			i.Aim = UnityEngine.Input.GetButtonDown("Fire2");
 			//i.Crouch = UnityEngine.Input.Get
 
 			return i; 

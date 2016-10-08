@@ -13,19 +13,22 @@ namespace Player
 	[RequireComponent(typeof(PlayerWeapons))]
 	[RequireComponent(typeof(PlayerController))]
 	[RequireComponent(typeof(PlayerState))]
+	[RequireComponent(typeof(PlayerMouseLook))]
+	[RequireComponent(typeof(HUD))]
 
 	public class PlayerStartup : MonoBehaviour 
 	{
 		public PlayerState state;
-
 		public PlayerAnimations animations;
 		public PlayerController controller;
 		public PlayerDamageController damageController;
 		public PlayerMovement movement;
 		public PlayerVehicleController vehicleController;
 		public PlayerWeapons weapons;
+		public PlayerMouseLook mouseLook;
+		public HUD playerHUD;
 
-		void Start () 
+		void Awake () 
 		{
 			bool isMine = state.IsMine;
 
@@ -35,9 +38,11 @@ namespace Player
 			movement.enabled = isMine;
 			vehicleController.enabled = isMine;
 			weapons.enabled = isMine;
+			mouseLook.enabled = isMine;
 
-			damageController.Initialize(controller);
-			damageController.Initialize(controller);
+			if (isMine)
+				playerHUD.Initialize();
+
 			vehicleController.Initialize(controller);
 		}
 	}

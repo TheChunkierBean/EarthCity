@@ -10,9 +10,8 @@ namespace Player
 	public class PlayerWeapons : MonoBehaviour 
 	{
 		public List<Weapon> weapons = new List<Weapon>();
-
-		private int _primary;
-		private int _secondary;
+		int _primary = 0;
+		int _secondary = 1;
 
 		public Weapon Primary
 		{
@@ -31,6 +30,7 @@ namespace Player
 			public delegate void PlayerWeaponsEvent ();
 	    	public PlayerWeaponsEvent OnWeaponChangedEvent;
 	    	public PlayerWeaponsEvent OnAmmoEquippedEvent;
+			public PlayerWeaponsEvent OnWeaponMeleeEvent;
 
     	#endregion Events
 
@@ -38,7 +38,7 @@ namespace Player
 		{
 			if (input.Shoot)
 			{
-				Primary.Fire();
+				Primary.TryFire();
 			}
 			else if (input.Aim)
 			{
@@ -46,13 +46,14 @@ namespace Player
 			}
 			else if (input.Reload)
 			{
-				Primary.Reload();
+				Primary.TryReload();
 			}
 			else if (input.Melee)
 			{
 				Melee();
 			}
-			else if (input.Shift)
+			
+			if (input.Shift)
 			{
 				ChangeWeapons();
 			}
@@ -61,11 +62,21 @@ namespace Player
 		private void ChangeWeapons ()
 		{
 			OnWeaponChangedEvent();
+
+			int p = _primary;
+			_primary = _secondary;
+			_secondary = p;
+
+			Secondary.gameObject.SetActive(false);
+			Primary.gameObject.SetActive(true);
+
+			Secondary.Dequipped();
+			Primary.Equipped();
 		}
 
 		private void Melee ()
 		{
-			
+			OnWeaponMeleeEvent();
 		}
 
 		private void EquipAmmo ()

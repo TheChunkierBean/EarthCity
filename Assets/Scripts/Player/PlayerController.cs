@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 //<summary> 
 // A collection and centralized controller of all the components of a player.
@@ -10,12 +9,13 @@ namespace Player
 {
 	public class PlayerController : MonoBehaviour 
 	{
-		private PlayerMovement movement;
-		private PlayerWeapons weapons;
-		private PlayerDamageController damageController;
-		private PlayerAnimations animations;
-		private PlayerVehicleController vehicleController;
-		private PlayerState state;
+		PlayerMovement movement;
+		PlayerWeapons weapons;
+		PlayerDamageController damageController;
+		PlayerAnimations animations;
+		PlayerVehicleController vehicleController;
+		PlayerState state;
+		PlayerMouseLook mouseLook;
 
 		private void Awake ()
 		{
@@ -23,8 +23,8 @@ namespace Player
 
 			if (movement == null || weapons == null || damageController == null || animations == null || vehicleController == null)
 			{
-				Debug.Break();
 				Debug.LogError("Unassigned variable(s)");
+				Debug.Break();
 			}
 			else
 			{
@@ -37,8 +37,6 @@ namespace Player
 			UpdateState();
 		}
 
-
-		// 
 		private void UpdateState ()
 		{
 			if (state.IsAlive)
@@ -51,7 +49,9 @@ namespace Player
 				}
 				else if (!state.InVehicle)
 				{
+					movement.UpdateMovementState(state, input);
 					weapons.UpdateWeaponState(input);
+					mouseLook.UpdateLookState(input);
 				}
 			}
 			else
@@ -66,10 +66,9 @@ namespace Player
 			Debug.Log("OnWeaponFired");
 
 			animations.OnWeaponFired(weapons.Primary);
-			//state.CurrentBattleStatus = PlayerState.BattleStatus.Firing;
-			// Recoil System 
+			HUD.OnWeaponFired(weapons.Primary);
 
-			// HUD . Reflect
+			// Recoil System 
 		}
 
 		// The weapon was aimed by the player
@@ -77,8 +76,9 @@ namespace Player
 		{
 			Debug.Log("OnWeaponAimed");
 
+			HUD.OnWeaponAimed(weapons.Primary);
+
 			// Change sensitivity 
-			// HUD . Reflect
 		}
 
 		// The weapon was reloaded by the player
@@ -87,8 +87,7 @@ namespace Player
 			Debug.Log("OnWeaponReloaded");
 	
 			animations.OnWeaponReloaded(weapons.Primary);
-
-			// HUD . Reflect
+			HUD.OnWeaponReloaded(weapons.Primary);
 		}
 
 		// The weapon was changed by the player
@@ -97,8 +96,13 @@ namespace Player
 			Debug.Log("OnWeaponChanged");
 
 			animations.OnWeaponChanged(weapons.Primary);
+			HUD.OnWeaponChanged(weapons.Primary, weapons.Secondary);
+		}
 
-			//HUD . Reflect
+		// The player meleed
+		public void OnWeaponMelee ()
+		{
+			
 		}
 
 		// Acquires a reference to all components of the player
@@ -109,7 +113,8 @@ namespace Player
 			damageController = GetComponent<PlayerDamageController>();
 			animations = GetComponent<PlayerAnimations>();
 			vehicleController = GetComponent<PlayerVehicleController>();
-			state = GetComponent<PlayerState>();		
+			state = GetComponent<PlayerState>();
+			mouseLook = GetComponent<PlayerMouseLook>();	
 		}
 
 		// Subscribes to all events raised by the player
@@ -123,6 +128,7 @@ namespace Player
 			}
 
         	weapons.OnWeaponChangedEvent += OnWeaponChanged;
+			weapons.OnWeaponMeleeEvent += OnWeaponMelee;
 		}
 	}
 }
