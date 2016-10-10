@@ -10,7 +10,7 @@ namespace Player
 	{
 		public PlayerState state;
 		public PlayerController controller;
-		public HUD playerHUD;
+		public HUDRelay playerHUD;
 
 		void Awake () 
 		{

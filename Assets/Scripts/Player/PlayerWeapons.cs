@@ -16,13 +16,13 @@ namespace Player
 		public Weapon Primary
 		{
 			get { return weapons[_primary]; }
-			set { _primary = weapons.IndexOf(value); }
+			private set { _primary = weapons.IndexOf(value); }
 		} 
 
 		public Weapon Secondary
 		{
 			get { return weapons[_secondary]; }
-			set { _secondary = weapons.IndexOf(value); }
+			private set { _secondary = weapons.IndexOf(value); }
 		} 
 
 		#region Events
@@ -42,13 +42,18 @@ namespace Player
 			{
 				Primary.TryFire();
 			}
-			else if (input.Aim)
+			else
+			{
+				Primary._isTriggerReleased = true;
+			}
+
+			if (input.Aim)
 			{
 				Primary.Aim();
 			}
 			else if (input.Reload)
 			{
-				Primary.TryReload();
+				Primary.BeginReload();
 			}
 			else if (input.Melee)
 			{
@@ -63,8 +68,6 @@ namespace Player
 
 		private void ChangeWeapons ()
 		{
-			OnWeaponChangedEvent();
-
 			int p = _primary;
 			_primary = _secondary;
 			_secondary = p;
@@ -75,10 +78,17 @@ namespace Player
 			Primary.gameObject.SetActive(true);
 
 			Primary.Equipped();
+
+			OnWeaponChangedEvent();
 		}
 
 		private void Melee ()
 		{
+			if (Primary is MeleeWeapon)
+			{
+				Primary.Fire();
+			}
+
 			OnWeaponMeleeEvent();
 		}
 

@@ -36,7 +36,7 @@ public class RaycastWeapon : Weapon
 
 		if (body != null)
 		{
-			body.AddForceAtPosition(transform.forward * projectileForce, hit.point);
+			body.AddForceAtPosition(transform.forward * projectileForce, hit.point, ForceMode.Acceleration);
 		}
 
 		if (dControl == null)

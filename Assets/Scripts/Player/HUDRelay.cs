@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class HUD : MonoBehaviour
+public class HUDRelay : MonoBehaviour
 {
 	public PlayerHUD playerHUDPrefab;
 	private static PlayerHUD playerHUD;
@@ -38,5 +38,10 @@ public class HUD : MonoBehaviour
 	public static void OnHealthChanged (float health)
 	{
 		playerHUD.OnHealthChanged(health);
+	}
+
+	public static void OnHitboxHitChanged (bool isHit)
+	{
+		playerHUD.OnHitboxHitChanged(isHit);
 	}
 }

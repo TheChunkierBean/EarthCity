@@ -1,8 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-
-// Very simple smooth mouselook modifier for the MainCamera in Unity
-// by Francis R. Griffiths-Keam - www.runningdimensions.com
 
 namespace Player
 {
@@ -83,17 +79,10 @@ namespace Player
             }
         }
 
-        public void OnWeaponAimed (bool isAiming, float fieldOfView)
+        public void OnWeaponAimed (float percent)
         {
-            if (isAiming)
-            {
-                sensitivity.x -= 0.8F;
-                sensitivity.y -= 0.8F;
-            }
-            else
-            {
-                sensitivity = _initSensitivity;
-            } 
+            sensitivity.x = _initSensitivity.x / 100 * percent;
+            sensitivity.y = _initSensitivity.y / 100 * percent;
         }
     }
 }

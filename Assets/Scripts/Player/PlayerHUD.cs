@@ -16,7 +16,7 @@ public class PlayerHUD : MonoBehaviour
 
 	public void OnWeaponAimed (Weapon weapon)
 	{
-		scope.gameObject.SetActive(weapon.isAiming);
+		scope.gameObject.SetActive(weapon.IsAiming);
 	}
 
 	public void OnWeaponReloaded (Weapon weapon)
@@ -40,5 +40,13 @@ public class PlayerHUD : MonoBehaviour
 	public void OnHealthChanged (float value)
 	{
 
+	}
+
+	public void OnHitboxHitChanged (bool isHit)
+	{
+		if (isHit)
+			crosshair.color = Color.red;
+		else
+			crosshair.color = Color.white;
 	}
 }

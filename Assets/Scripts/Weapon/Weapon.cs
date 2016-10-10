@@ -7,6 +7,11 @@ public abstract class Weapon : MonoBehaviour
     public int ammo = 10;
     public int spareAmmo = 180;
     public int clipSize = 10;
+    public float reloadTime = 1.25F;
+    public float equipTime = 0.4F;
+
+    public enum FireMode {Automatic, SemiAutomatic, Burst}
+    public FireMode fireMode = FireMode.Automatic; 
 
     [System.Serializable]
     public struct Sounds
@@ -16,7 +21,7 @@ public abstract class Weapon : MonoBehaviour
         public AudioClip[] reload;
         public AudioClip[] equip;
     }
-    public Sounds sound;
+    public Sounds Sound;
 
     [System.Serializable]
     public struct HUDElements
@@ -28,13 +33,16 @@ public abstract class Weapon : MonoBehaviour
     }
     public HUDElements HUD;
 
-    public float recoilPower = 30;
-
-    public Animation am;
-    public AnimationClip shoot;
-    public AnimationClip reloadA;
-
-    public animManager amM;
+    [System.Serializable]
+    public struct Aiming
+    {
+        public bool canAim;
+        [Range(0, 100)]
+        public int[] aimStages;
+        [HideInInspector]
+        public int currentAimState;
+    }
+    public Aiming Scoping;
 
     #region Events
 
@@ -45,96 +53,140 @@ public abstract class Weapon : MonoBehaviour
 
     #endregion Events
 
-    public bool isAiming = false;
-
-    bool _isReloading = false;
-
-    float _fireTimeStamp = -10.0F;
-    float _reloadTimeStamp = -10.0F;
-    float _fireRate = 0.1F;
-
-    public bool CanShoot
+    public bool IsReloading
     {
-        get { return Time.time >= _fireTimeStamp + _fireRate && !_isReloading && ammo > 0; }
+        get 
+        {
+            return (Time.time < _reloadTimeStamp + reloadTime) && _reloadTimeStamp > _equipTimeStamp;
+        }
+        set 
+        {
+            if (value)  // if reloading is true, set the timestamp
+                _reloadTimeStamp = Time.time;
+        }
     }
 
     public bool CanReload
     {
-        get { return ammo < 32 && spareAmmo > 0; }
+        get { return ammo < clipSize && spareAmmo > 0 && !IsReloading; }
     }
 
-    public float reloadTime = 1.25F;
+    public bool IsEquipped 
+    {
+        get { return (Time.time > _equipTimeStamp + equipTime); }
+    }
+
+    public float ScopeToFOVRatio
+    {
+        get 
+        { 
+            if (!IsAiming)
+                return 100;
+            else
+                return Scoping.aimStages[Scoping.currentAimState-1];
+         }
+    }
+
+    public bool IsAiming 
+    {
+        get { return (Scoping.currentAimState > 0); }
+        set 
+        { 
+            if (value)
+            {
+                Scoping.currentAimState++;
+
+                if (Scoping.currentAimState > Scoping.aimStages.Length)
+                    Scoping.currentAimState = 0;
+            }
+            else
+                Scoping.currentAimState = 0;
+        }
+    }
+
+    public bool CanFire
+    {
+        get { return _isTriggerReleased && Time.time >= _fireTimeStamp + _fireRate && !IsReloading && ammo > 0 && IsEquipped; }
+    }
+
+    float _fireTimeStamp = -10.0F;
+    float _reloadTimeStamp = -10.0F;
+    float _equipTimeStamp = -10.0F;
+    float _fireRate = 0.1F;
+    public bool _isTriggerReleased = false;
 
     public void UpdateState ()
     {
-        if (_isReloading && Time.time > _reloadTimeStamp + reloadTime)
-        {
-            Reload();
-        }
+        /*if (Time.time > _reloadTimeStamp + reloadTime)
+            FinishReload();*/
+
+        ammo = 1000;
+        // Temp
+        if (CastRay().collider != null && CastRay().collider.GetComponent<Hitbox>())
+            HUDRelay.OnHitboxHitChanged(true);
+        else
+            HUDRelay.OnHitboxHitChanged(false);
     }
 
     // Is the weapon ready to shoot?
     public void TryFire ()
     {
-        if (CanShoot)
+        if (CanFire)
         {
-            Fire();
+            Fire();                             // For different firing modes, supply a method that determines the firing mode? Like a FireAuto for autos, FireSemi for semi and FireBurst for burst? Will remove code redundance
             OnWeaponFiredEvent();
-            PlaySound(sound.fire);
+            PlaySound(Sound.fire);
 
             _fireTimeStamp = Time.time;
             ammo--;
 
+            if (fireMode == FireMode.SemiAutomatic)
+                _isTriggerReleased = false;
+
             if (ammo == 0)
-                TryReload();
+                BeginReload();
         }
     }
 
-    public void TryReload ()
+    public void BeginReload ()
     {
         if (CanReload)
         {
-            OnWeaponReloadedEvent();
-            PlaySound(sound.reload);
+            IsReloading = true;
 
-            _isReloading = true;
-            _reloadTimeStamp = Time.time;
+            PlaySound(Sound.reload);
+            OnWeaponReloadedEvent(); 
         }
     }
 
     // Called when TryFire "suceedes"
     public abstract void Fire ();
 
-    public virtual void Reload ()
+    public virtual void FinishReload ()
     {
-        int temp = ammo;
-        ammo += Mathf.Min((clipSize - ammo), spareAmmo);
-        spareAmmo -= ammo - temp;
+        if (IsReloading)
+        {
+            int temp = ammo;
+            ammo += Mathf.Min((clipSize - ammo), spareAmmo);
+            spareAmmo -= ammo - temp;
 
-        _isReloading = false;
-
-        Debug.Log("Weapon has reloaded");
+            Debug.Log("Weapon has reloaded");
+        }
     }
-
-    public float currentFieldOfView = 60;
 
     public void Aim ()
     {
-        Debug.Log("Weapon is aiming");
-        isAiming = !isAiming;
+        if (!Scoping.canAim)
+            return;
 
-        if (isAiming)
-            currentFieldOfView = 60;
-        else
-            currentFieldOfView = 90;
-
+        IsAiming = true;
+        
         OnWeaponAimedEvent();
     }
 
     public void Dequipped ()
     {
-        _isReloading = false;
-        isAiming = false;
+        IsAiming = false;
 
         OnWeaponAimedEvent();
     }
@@ -142,7 +194,9 @@ public abstract class Weapon : MonoBehaviour
     public void Equipped ()
     {
         if (ammo == 0)
-            TryReload();
+            BeginReload();
+
+        _equipTimeStamp = Time.time;
     }
 
     protected RaycastHit CastRay ()
@@ -168,6 +222,9 @@ public abstract class Weapon : MonoBehaviour
     void OnGUI()
     {
         GUI.Box(new Rect(110, 10, 150, 30), "Ammo: " + ammo + " / " + spareAmmo);
+        GUI.Box(new Rect(110, 40, 150, 30), "CanReload: " + CanReload);
+        GUI.Box(new Rect(110, 70, 150, 30), "IsReloading: " + IsReloading);
+        GUI.Box(new Rect(110, 100, 150, 30), "IsEquipped: " + IsEquipped);
     }
 }
 
@@ -190,3 +247,12 @@ public abstract class Weapon : MonoBehaviour
 
         }
     }*/
+
+
+        /*public float recoilPower = 30;
+
+    public Animation am;
+    public AnimationClip shoot;
+    public AnimationClip reloadA;
+
+    public animManager amM;*/

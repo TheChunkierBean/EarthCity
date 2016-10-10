@@ -92,7 +92,7 @@ public class Explosive : MonoBehaviour
 				// Add explosive force
 				if (c.GetComponent<Rigidbody>())
 				{
-					body.AddExplosionForce(explosiveForce, transform.position, explosiveRadius, 3.0F);
+					body.AddExplosionForce(explosiveForce, transform.position, explosiveRadius, 3.0F, ForceMode.Acceleration);
 				}
 
 				// Calculate damage

@@ -15,7 +15,7 @@ namespace Player
 	[RequireComponent(typeof(PlayerController))]
 	[RequireComponent(typeof(PlayerState))]
 	[RequireComponent(typeof(PlayerMouseLook))]
-	[RequireComponent(typeof(HUD))]
+	[RequireComponent(typeof(HUDRelay))]
 	
 	public class PlayerController : MonoBehaviour 
 	{
@@ -77,51 +77,49 @@ namespace Player
 		}
 
 		// The weapon was fired by the player
-		public void OnWeaponFired ()
+		private void OnWeaponFired ()
 		{
-			Debug.Log("OnWeaponFired");
-
 			animations.OnWeaponFired(weapons.Primary);
-			HUD.OnWeaponFired(weapons.Primary);
+			HUDRelay.OnWeaponFired(weapons.Primary);
 
 			// Recoil System 
 		}
 
 		// The weapon was aimed by the player
-		public void OnWeaponAimed ()
+		private void OnWeaponAimed ()
 		{
-			Debug.Log("OnWeaponAimed");
+			float FOVRatio = weapons.Primary.ScopeToFOVRatio;
+			float currentFieldOfView = 90.0F / 100.0F * FOVRatio;			// 90 is the default FOV. This should be changeable!
+			
+			playerCamera.fieldOfView = currentFieldOfView;
+			mouseLook.OnWeaponAimed(FOVRatio);
 
-			HUD.OnWeaponAimed(weapons.Primary);
-
-			playerCamera.fieldOfView = weapons.Primary.currentFieldOfView;
-			mouseLook.OnWeaponAimed(weapons.Primary.isAiming, playerCamera.fieldOfView);
-
-			// Change sensitivity 
+			HUDRelay.OnWeaponAimed(weapons.Primary);
 		}
 
 		// The weapon was reloaded by the player
-		public void OnWeaponReloaded ()
-		{
-			Debug.Log("OnWeaponReloaded");
-	
+		private void OnWeaponReloaded ()
+		{	
 			animations.OnWeaponReloaded(weapons.Primary);
-			HUD.OnWeaponReloaded(weapons.Primary);
+			HUDRelay.OnWeaponReloaded(weapons.Primary);
 		}
 
 		// The weapon was changed by the player
-		public void OnWeaponChanged ()
+		private void OnWeaponChanged ()
 		{
-			Debug.Log("OnWeaponChanged");
-
 			animations.OnWeaponChanged(weapons.Primary);
-			HUD.OnWeaponChanged(weapons.Primary, weapons.Secondary);
+			HUDRelay.OnWeaponChanged(weapons.Primary, weapons.Secondary);
 		}
 
 		// The player meleed
-		public void OnWeaponMelee ()
+		private void OnWeaponMelee ()
 		{
 			
+		}
+
+		private void OnPlayerDamaged ()
+		{
+			HUDRelay.OnShieldChanged(damageController.testHealth);
 		}
 
 		// Acquires a reference to all components of the player
@@ -148,6 +146,8 @@ namespace Player
 
         	weapons.OnWeaponChangedEvent += OnWeaponChanged;
 			weapons.OnWeaponMeleeEvent += OnWeaponMelee;
+
+			damageController.OnPlayerDamagedEvent += OnPlayerDamaged;
 		}
 	}
 }
