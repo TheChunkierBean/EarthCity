@@ -23,11 +23,14 @@ namespace Player
         Vector2 _mouseAbsolute;
         Vector2 _smoothMouse;
 
+        Vector2 _initSensitivity;
 
-        void Awake ()
+        private void Awake ()
         {
             // Set target direction to the camera's initial orientation.
             targetDirection = cameraObject.localRotation.eulerAngles;
+
+            _initSensitivity = sensitivity;
 
             // Set target direction for the character body to its inital state.
             if (characterBody) 
@@ -36,7 +39,6 @@ namespace Player
 
         public void UpdateLookState (PlayerInput.Input input)
         {
-            Debug.Log("UpdateLookState");
             // Allow the script to clamp based on a desired target value.
             var targetOrientation = Quaternion.Euler(targetDirection);
             var targetCharacterOrientation = Quaternion.Euler(targetCharacterDirection);
@@ -79,6 +81,19 @@ namespace Player
                 var yRotation = Quaternion.AngleAxis(_mouseAbsolute.x, cameraObject.InverseTransformDirection(Vector3.up));
                 cameraObject.localRotation *= yRotation;
             }
+        }
+
+        public void OnWeaponAimed (bool isAiming, float fieldOfView)
+        {
+            if (isAiming)
+            {
+                sensitivity.x -= 0.8F;
+                sensitivity.y -= 0.8F;
+            }
+            else
+            {
+                sensitivity = _initSensitivity;
+            } 
         }
     }
 }

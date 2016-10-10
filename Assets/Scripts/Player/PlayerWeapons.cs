@@ -36,6 +36,8 @@ namespace Player
 
 		public void UpdateWeaponState (PlayerInput.Input input)
 		{
+			Primary.UpdateState();
+
 			if (input.Shoot)
 			{
 				Primary.TryFire();
@@ -67,10 +69,11 @@ namespace Player
 			_primary = _secondary;
 			_secondary = p;
 
+			Secondary.Dequipped();
+
 			Secondary.gameObject.SetActive(false);
 			Primary.gameObject.SetActive(true);
 
-			Secondary.Dequipped();
 			Primary.Equipped();
 		}
 

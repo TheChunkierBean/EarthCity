@@ -20,6 +20,8 @@ public class RaycastWeapon : Weapon
 
 	public SurfaceDecal decals;
 
+	public float projectileForce = 5.0F; 
+
 	public override void Fire ()
 	{
 		RaycastHit hit = base.CastRay();
@@ -29,7 +31,13 @@ public class RaycastWeapon : Weapon
 
 		Destroy(Instantiate(decals.DEBUGDecal, hit.point, Quaternion.LookRotation(hit.normal)) as GameObject, 2);
 
-		DamageController dControl = GetComponent<DamageController>();
+		DamageController dControl = hit.collider.GetComponent<DamageController>();
+		Rigidbody body = hit.collider.GetComponent<Rigidbody>();
+
+		if (body != null)
+		{
+			body.AddForceAtPosition(transform.forward * projectileForce, hit.point);
+		}
 
 		if (dControl == null)
 			return;

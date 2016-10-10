@@ -29,4 +29,14 @@ public class HUD : MonoBehaviour
 	{
 		playerHUD.OnWeaponChanged(primary, secondary);
 	}
+
+	public static void OnShieldChanged (float shield)
+	{
+		playerHUD.OnShieldChanged(shield);
+	}
+
+	public static void OnHealthChanged (float health)
+	{
+		playerHUD.OnHealthChanged(health);
+	}
 }

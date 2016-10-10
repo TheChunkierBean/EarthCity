@@ -6,7 +6,17 @@
 //</summary> 
 
 namespace Player
-{
+{	
+	[RequireComponent(typeof(PlayerAnimations))]
+	[RequireComponent(typeof(PlayerDamageController))]
+	[RequireComponent(typeof(PlayerMovement))]
+	[RequireComponent(typeof(PlayerVehicleController))]
+	[RequireComponent(typeof(PlayerWeapons))]
+	[RequireComponent(typeof(PlayerController))]
+	[RequireComponent(typeof(PlayerState))]
+	[RequireComponent(typeof(PlayerMouseLook))]
+	[RequireComponent(typeof(HUD))]
+	
 	public class PlayerController : MonoBehaviour 
 	{
 		PlayerMovement movement;
@@ -16,6 +26,7 @@ namespace Player
 		PlayerVehicleController vehicleController;
 		PlayerState state;
 		PlayerMouseLook mouseLook;
+		public Camera playerCamera;
 
 		private void Awake ()
 		{
@@ -29,6 +40,11 @@ namespace Player
 			else
 			{
 				Subscribe();
+
+				if (state.IsMine)
+				{
+					// Don't show graphics
+				}
 			}
 		}
 
@@ -77,6 +93,9 @@ namespace Player
 			Debug.Log("OnWeaponAimed");
 
 			HUD.OnWeaponAimed(weapons.Primary);
+
+			playerCamera.fieldOfView = weapons.Primary.currentFieldOfView;
+			mouseLook.OnWeaponAimed(weapons.Primary.isAiming, playerCamera.fieldOfView);
 
 			// Change sensitivity 
 		}

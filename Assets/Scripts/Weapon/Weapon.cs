@@ -65,11 +65,10 @@ public abstract class Weapon : MonoBehaviour
 
     public float reloadTime = 1.25F;
 
-    void Update ()
+    public void UpdateState ()
     {
         if (_isReloading && Time.time > _reloadTimeStamp + reloadTime)
         {
-            Debug.LogError("Time is up");
             Reload();
         }
     }
@@ -117,13 +116,17 @@ public abstract class Weapon : MonoBehaviour
         Debug.Log("Weapon has reloaded");
     }
 
+    public float currentFieldOfView = 60;
+
     public void Aim ()
     {
         Debug.Log("Weapon is aiming");
         isAiming = !isAiming;
 
         if (isAiming)
-            //Aim
+            currentFieldOfView = 60;
+        else
+            currentFieldOfView = 90;
 
         OnWeaponAimedEvent();
     }
@@ -132,6 +135,8 @@ public abstract class Weapon : MonoBehaviour
     {
         _isReloading = false;
         isAiming = false;
+
+        OnWeaponAimedEvent();
     }
 
     public void Equipped ()
