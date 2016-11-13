@@ -4,6 +4,6 @@ public class MeleeWeapon : Weapon
 {
 	public override void Fire ()
 	{
-		
+		BroadcastWeaponMeleed(this);
 	}
 }

@@ -2,5 +2,13 @@
 
 public abstract class DamageController : MonoBehaviour 
 {
-	public abstract void ApplyDamage (float damage);
+	public float LastDamageTimeStamp;
+
+	public virtual void ApplyDamage (float damage)
+	{
+		LastDamageTimeStamp = Time.time;
+	}
+
+
+	//public abstract void Regenerate ();
 }

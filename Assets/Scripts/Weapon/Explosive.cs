@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Explosive : MonoBehaviour 
+public class Explosive : DamageController
 {
 	public float explosiveTimer = 20; 
 	public float explosiveRadius = 10;
@@ -33,20 +33,27 @@ public class Explosive : MonoBehaviour
 		}
 	}
 
+	public override void ApplyDamage (float damage)
+	{
+		base.ApplyDamage(damage);
+
+		Explode();
+	}
+
 	public virtual void Move (float force)
 	{
 		body.AddForce(force * transform.forward);
 	}
 
 	protected virtual void Explode ()
-	{
+	{		
 		if (explosion)
 			Instantiate(explosion, transform.position, Quaternion.identity);
 		
 		AudioSource.PlayClipAtPoint(explosionSound, transform.position);
 
 		CheckForDamageControllers();
-		
+
 		Destroy(gameObject);
 	}
 
@@ -54,14 +61,14 @@ public class Explosive : MonoBehaviour
 	{	
 		// The distance traveled over 2 frames. Only calculating for 1 frame is not 
 		// enough accuracy for high velocity objects.
-		float forwardTrace = body.velocity.magnitude * (Time.deltaTime * 2);
+		float traceDistance = body.velocity.magnitude * (Time.deltaTime * 2);
 		bool isIntercepted = false;
 
 		Ray r = new Ray(transform.position, transform.forward);
 
-		Debug.DrawRay(r.origin, r.direction * forwardTrace , Color.red);
+		Debug.DrawRay(r.origin, r.direction * traceDistance , Color.red);
 
-		if (Physics.Raycast(r, out _hit, forwardTrace))
+		if (Physics.Raycast(r, out _hit, traceDistance))
 		{
 			// We don't want to explode on triggers
 			if (!_hit.collider.isTrigger)
@@ -96,7 +103,7 @@ public class Explosive : MonoBehaviour
 				}
 
 				// Calculate damage
-				if (dControl != null)
+				if (dControl != null && !(dControl is Explosive))
 				{
 					Debug.DrawLine(transform.position, r.point, Color.red, 1.5F);
 					float damage = explosiveDamage - (explosiveDamage * normDistance);

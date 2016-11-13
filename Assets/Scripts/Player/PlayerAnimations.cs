@@ -8,7 +8,7 @@ namespace Player
 {
 	public class PlayerAnimations : MonoBehaviour 
 	{
-		public void OnWeaponFired (Weapon weapon)
+		public void OnWeaponFired (PlayerController weapon)
 		{
 			// Player weapon animations
 			// Player player animations
@@ -29,6 +29,14 @@ namespace Player
 		public void UpdateAnimationState ()
 		{
 			
+		}
+
+		public void Subscribe ()
+		{
+			PlayerController PC = GetComponent<PlayerController>();
+			//PC.WeaponFiredEvent + OnWeaponFired;
+
+
 		}
 	}
 }

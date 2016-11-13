@@ -46,5 +46,7 @@ public class RaycastWeapon : Weapon
 		float totalDamage = damage.baseDamage + (damage.isPrecision? damage.additivePrecisionDamage : 0);
 
 		dControl.ApplyDamage(totalDamage);
+
+		BroadcastWeaponFired(this);
 	}
 }

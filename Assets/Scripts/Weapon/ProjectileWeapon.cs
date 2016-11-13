@@ -21,5 +21,15 @@ public class ProjectileWeapon : Weapon
 		GameObject pro = Instantiate(projectile.gameObject, projectileSpawn.position, rotation) as GameObject;
 
 		pro.GetComponent<Explosive>().Move(projectileVelocity);
+
+		BroadcastWeaponFired(this);
+
+		// If the camera is closer to a surface than the bullet spawn point, this indicates that we are standing too close to a wall
+		// The projectile is very likely to go through the geometry. Instead we blow it up!
+		if (Vector3.Distance(base.cam.transform.position, hit.point) < Vector3.Distance(projectileSpawn.position, hit.point))
+		{
+			Debug.LogError("Too close to surface");
+			pro.GetComponent<Explosive>().ApplyDamage(Mathf.Infinity);
+		}
 	}
 }

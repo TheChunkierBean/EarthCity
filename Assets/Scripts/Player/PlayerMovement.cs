@@ -22,7 +22,6 @@ namespace Player
 			GetComponent<Rigidbody>().useGravity = false;
 		}
 
-
 		public void UpdateMovementState (PlayerState state, PlayerInput.Input input)
 		{
 			//Debug.Log("Moving. Vertical: " + input.Vertical + " Horizontal: " + input.Horizontal + "state: " + state.IsCrouched);
@@ -41,6 +40,7 @@ namespace Player
 				velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
 				velocityChange.y = 0;
 				GetComponent<Rigidbody>().AddForce(velocityChange, ForceMode.VelocityChange);
+				//transform.position += targetVelocity;
 
 				// Jump
 				if (canJump && input.Jump)

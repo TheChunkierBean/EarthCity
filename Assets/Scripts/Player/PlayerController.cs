@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using Bolt;
 
 //<summary> 
 // A collection and centralized controller of all the components of a player.
@@ -7,147 +9,150 @@
 
 namespace Player
 {	
-	[RequireComponent(typeof(PlayerAnimations))]
-	[RequireComponent(typeof(PlayerDamageController))]
-	[RequireComponent(typeof(PlayerMovement))]
-	[RequireComponent(typeof(PlayerVehicleController))]
-	[RequireComponent(typeof(PlayerWeapons))]
-	[RequireComponent(typeof(PlayerController))]
-	[RequireComponent(typeof(PlayerState))]
-	[RequireComponent(typeof(PlayerMouseLook))]
-	[RequireComponent(typeof(HUDRelay))]
-	
-	public class PlayerController : MonoBehaviour 
+	public class PlayerController : EntityBehaviour<INewPlayerState>  
 	{
-		PlayerMovement movement;
-		PlayerWeapons weapons;
-		PlayerDamageController damageController;
-		PlayerAnimations animations;
-		PlayerVehicleController vehicleController;
-		PlayerState state;
-		PlayerMouseLook mouseLook;
-		public Camera playerCamera;
+		PlayerMovement Movement {get; set;}
+		PlayerInventory Inventory {get; set;}
+		PlayerDamageController DamageController {get; set;}
+		PlayerAnimations Animation {get; set;}
+		PlayerVehicleController VehicleController {get; set;}
+		PlayerState State {get; set;}
+		PlayerCamera Look {get; set;}
+		HUDRelay Relay {get; set;}
+		PlayerInput.Input Input { get { return PlayerInput.GetInput(); } }
+		public Camera PlayerCamera;
+
+		public override void Attached ()
+		{
+			if (State.IsMine)
+			{
+				Relay.Initialize();
+				PlayerCamera.enabled = true;
+			}
+
+			//state.ChangeTransforms(state.Transform, transform);
+			state.SetTransforms(state.Transform, transform);
+			/*if (State.IsMine)
+			{
+				
+			}*/
+		}
 
 		private void Awake ()
 		{
 			GetReference();
-
-			if (movement == null || weapons == null || damageController == null || animations == null || vehicleController == null)
-			{
-				Debug.LogError("Unassigned variable(s)");
-				Debug.Break();
-			}
-			else
-			{
-				Subscribe();
-
-				if (state.IsMine)
-				{
-					// Don't show graphics
-				}
-			}
 		}
 
 		private void Update ()
 		{
-			UpdateState();
+			if (State.IsAlive)
+				UpdateState();
 		}
 
 		private void UpdateState ()
 		{
-			if (state.IsAlive)
-			{
-				PlayerInput.Input input = PlayerInput.GetInput();
+			DamageController.Regenerate();
 
-				if (state.InVehicle)
-				{
-					vehicleController.UpdateVehicleState(input);
-				}
-				else if (!state.InVehicle)
-				{
-					movement.UpdateMovementState(state, input);
-					weapons.UpdateWeaponState(input);
-					mouseLook.UpdateLookState(input);
-				}
-			}
-			else
-			{
-				// Control death camera??
-			}
+			VehicleController.UpdateVehicleState(Input);
+
+			if (State.InVehicle)
+				return;
+			
+			Movement.UpdateMovementState(State, Input);
+			Inventory.UpdateWeaponState(Input);
+			Look.UpdateLookState(Input);
 		}
 
 		// The weapon was fired by the player
-		private void OnWeaponFired ()
+		private void ReceiveWeaponFired (Weapon w)
 		{
-			animations.OnWeaponFired(weapons.Primary);
-			HUDRelay.OnWeaponFired(weapons.Primary);
-
-			// Recoil System 
+			Debug.Log("ReceiveWeaponFired");
+			HUDRelay.OnWeaponFired(w);
 		}
 
 		// The weapon was aimed by the player
-		private void OnWeaponAimed ()
+		private void ReceivedWeaponAimed (Weapon w)
 		{
-			float FOVRatio = weapons.Primary.ScopeToFOVRatio;
-			float currentFieldOfView = 90.0F / 100.0F * FOVRatio;			// 90 is the default FOV. This should be changeable!
-			
-			playerCamera.fieldOfView = currentFieldOfView;
-			mouseLook.OnWeaponAimed(FOVRatio);
-
-			HUDRelay.OnWeaponAimed(weapons.Primary);
+			Debug.Log("ReceivedWeaponAimed");
+			Look.OnWeaponAimed(this, w);
+			HUDRelay.OnWeaponAimed(w);
 		}
 
 		// The weapon was reloaded by the player
-		private void OnWeaponReloaded ()
+		private void ReceivedWeaponReloaded (Weapon w)
 		{	
-			animations.OnWeaponReloaded(weapons.Primary);
-			HUDRelay.OnWeaponReloaded(weapons.Primary);
-		}
-
-		// The weapon was changed by the player
-		private void OnWeaponChanged ()
-		{
-			animations.OnWeaponChanged(weapons.Primary);
-			HUDRelay.OnWeaponChanged(weapons.Primary, weapons.Secondary);
+			Debug.Log("ReceivedWeaponReloaded");
 		}
 
 		// The player meleed
-		private void OnWeaponMelee ()
+		private void ReceivedWeaponMeleed (Weapon w)
 		{
-			
+			Debug.Log("ReceivedWeaponMeleed");
 		}
 
-		private void OnPlayerDamaged ()
+		// The weapon was changed by the player
+		private void ReceivedWeaponChanged ()
 		{
-			HUDRelay.OnShieldChanged(damageController.testHealth);
+			Debug.Log("ReceivedWeaponChanged");
+			HUDRelay.OnWeaponChanged(Inventory);
+		}
+
+		// The player equipped a new weapon 
+		private void ReceivedWeaponEquipped ()
+		{
+			Debug.Log("ReceivedWeaponEquipped");
+			HUDRelay.OnWeaponChanged(Inventory);
+		}
+
+		// The player took damage
+		private void ReceivedDamageTaken ()
+		{
+			HUDRelay.OnShieldChanged(DamageController.TestHealth);
+		}
+
+		private void ReceivedHealthRegenerated ()
+		{
+			HUDRelay.OnShieldChanged(DamageController.TestHealth);
 		}
 
 		// Acquires a reference to all components of the player
 		private void GetReference ()
 		{
-			movement = GetComponent<PlayerMovement>();
-			weapons = GetComponent<PlayerWeapons>();
-			damageController = GetComponent<PlayerDamageController>();
-			animations = GetComponent<PlayerAnimations>();
-			vehicleController = GetComponent<PlayerVehicleController>();
-			state = GetComponent<PlayerState>();
-			mouseLook = GetComponent<PlayerMouseLook>();	
+			try 
+			{
+				Movement = GetComponent<PlayerMovement>();
+				Inventory = GetComponent<PlayerInventory>();
+				DamageController = GetComponent<PlayerDamageController>();
+				Animation = GetComponent<PlayerAnimations>();
+				VehicleController = GetComponent<PlayerVehicleController>();
+				State = GetComponent<PlayerState>();
+				Look = GetComponent<PlayerCamera>();
+				Relay = GetComponent<HUDRelay>();
+			}
+			catch (NullReferenceException)
+			{
+				Debug.LogError("Not all references was found for the Player: " + name);
+			}
+
+			Subscribe();
 		}
 
 		// Subscribes to all events raised by the player
 		private void Subscribe ()
 		{
-			foreach (Weapon w in weapons.weapons)
+			foreach (Weapon weapon in Inventory._weapons)
 			{
-		        w.OnWeaponFiredEvent += OnWeaponFired;
-        		w.OnWeaponAimedEvent += OnWeaponAimed;
-        		w.OnWeaponReloadedEvent += OnWeaponReloaded;
+				weapon.BroadcastWeaponFired += ReceiveWeaponFired;
+				weapon.BroadcastWeaponAimed += ReceivedWeaponAimed;
+				weapon.BroadcastWeaponReloaded += ReceivedWeaponReloaded;
+				weapon.BroadcastWeaponMeleed += ReceivedWeaponMeleed;
 			}
 
-        	weapons.OnWeaponChangedEvent += OnWeaponChanged;
-			weapons.OnWeaponMeleeEvent += OnWeaponMelee;
+			Inventory.BroadcastWeaponChanged += ReceivedWeaponChanged;
+			Inventory.BroadcastWeaponEquipped += ReceivedWeaponEquipped;
 
-			damageController.OnPlayerDamagedEvent += OnPlayerDamaged;
+			DamageController.BroadcastDamageTaken += ReceivedDamageTaken;
+			DamageController.BroadcastHealthRegenerated += ReceivedHealthRegenerated;
 		}
 	}
 }

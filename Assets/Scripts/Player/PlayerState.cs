@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 namespace Player
 {
@@ -57,12 +56,7 @@ namespace Player
 		{
 			get 
 			{
-				/*if (NetworkingWhatever.IsConnected)
-					return networkviewWhatever.IsMine;
-				else
-					return NetworkWhater.IsSinglePlayer;*/
-
-				return true;
+				return GetComponent<BoltEntity>().isControllerOrOwner;
 			}
 		}
 	}

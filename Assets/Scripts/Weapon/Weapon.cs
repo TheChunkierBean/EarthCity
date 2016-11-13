@@ -44,15 +44,6 @@ public abstract class Weapon : MonoBehaviour
     }
     public Aiming Scoping;
 
-    #region Events
-
-        public delegate void WeaponEvent ();
-        public WeaponEvent OnWeaponFiredEvent;
-        public WeaponEvent OnWeaponAimedEvent;
-        public WeaponEvent OnWeaponReloadedEvent;
-
-    #endregion Events
-
     public bool IsReloading
     {
         get 
@@ -115,6 +106,12 @@ public abstract class Weapon : MonoBehaviour
     float _fireRate = 0.1F;
     public bool _isTriggerReleased = false;
 
+    public delegate void TestContract(Weapon w);
+    public TestContract BroadcastWeaponFired;
+    public TestContract BroadcastWeaponAimed;
+    public TestContract BroadcastWeaponReloaded;
+    public TestContract BroadcastWeaponMeleed;
+
     public void UpdateState ()
     {
         /*if (Time.time > _reloadTimeStamp + reloadTime)
@@ -123,9 +120,9 @@ public abstract class Weapon : MonoBehaviour
         ammo = 1000;
         // Temp
         if (CastRay().collider != null && CastRay().collider.GetComponent<Hitbox>())
-            HUDRelay.OnHitboxHitChanged(true);
+            Player.HUDRelay.OnHitboxHitChanged(true);
         else
-            HUDRelay.OnHitboxHitChanged(false);
+            Player.HUDRelay.OnHitboxHitChanged(false);
     }
 
     // Is the weapon ready to shoot?
@@ -134,7 +131,6 @@ public abstract class Weapon : MonoBehaviour
         if (CanFire)
         {
             Fire();                             // For different firing modes, supply a method that determines the firing mode? Like a FireAuto for autos, FireSemi for semi and FireBurst for burst? Will remove code redundance
-            OnWeaponFiredEvent();
             PlaySound(Sound.fire);
 
             _fireTimeStamp = Time.time;
@@ -155,7 +151,7 @@ public abstract class Weapon : MonoBehaviour
             IsReloading = true;
 
             PlaySound(Sound.reload);
-            OnWeaponReloadedEvent(); 
+            BroadcastWeaponReloaded(this); 
         }
     }
 
@@ -181,14 +177,14 @@ public abstract class Weapon : MonoBehaviour
 
         IsAiming = true;
         
-        OnWeaponAimedEvent();
+        BroadcastWeaponAimed(this);
     }
 
     public void Dequipped ()
     {
         IsAiming = false;
 
-        OnWeaponAimedEvent();
+       BroadcastWeaponAimed(this);
     }
 
     public void Equipped ()
